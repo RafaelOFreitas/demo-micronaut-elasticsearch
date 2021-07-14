@@ -1,0 +1,5 @@
+META-INF/services/io.micronaut.inject.BeanDefinitionReference
+br/com/freitas/$MicronautDemoElasticsearchTestDefinition.class
+br/com/freitas/$MicronautDemoElasticsearchTestDefinitionClass.class
+br/com/freitas/MicronautDemoElasticsearchTest.class
+br/com/freitas/$MicronautDemoElasticsearchTestDefinition$$exec1.class
