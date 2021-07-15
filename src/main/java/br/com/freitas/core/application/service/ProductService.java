@@ -1,7 +1,6 @@
 package br.com.freitas.core.application.service;
 
 import br.com.freitas.core.application.port.elastic.ElasticHighLevelServicePort;
-import br.com.freitas.core.application.port.elastic.ElasticLowLevelServicePort;
 import br.com.freitas.core.application.port.web.ProductServicePort;
 import br.com.freitas.core.domain.Product;
 import br.com.freitas.core.exception.ConflictException;
@@ -15,7 +14,7 @@ import javax.inject.Singleton;
 public class ProductService implements ProductServicePort {
 
     @Inject
-    private ElasticLowLevelServicePort elasticService;
+    private ElasticHighLevelServicePort elasticService;
 
     @Override
     public Product saveProductWithId(String id, Product product) {

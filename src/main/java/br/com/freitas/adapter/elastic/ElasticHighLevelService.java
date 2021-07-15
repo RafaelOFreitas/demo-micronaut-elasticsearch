@@ -21,12 +21,14 @@ import org.elasticsearch.common.xcontent.XContentType;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
+import static br.com.freitas.adapter.elastic.constants.ElasticConstants.INDEX;
 
 @Slf4j
 @Singleton
 public class ElasticHighLevelService implements ElasticHighLevelServicePort {
-
-    public static final String INDEX = "products";
 
     private final RestHighLevelClient client = new RestClientFactory().builderHighLevel();
 
@@ -118,5 +120,10 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
             log.error("Error verifying the existence of the document index: {}", INDEX, e);
             return false;
         }
+    }
+
+    @Override
+    public Optional<List<Product>> search(String query) {
+        return Optional.empty();
     }
 }

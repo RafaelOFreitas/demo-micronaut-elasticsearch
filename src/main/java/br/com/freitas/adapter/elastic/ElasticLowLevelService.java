@@ -15,18 +15,14 @@ import org.elasticsearch.client.RestClient;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
+import static br.com.freitas.adapter.elastic.constants.ElasticConstants.*;
 
 @Slf4j
 @Singleton
 public class ElasticLowLevelService implements ElasticLowLevelServicePort {
-
-    public static final String INDEX = "products";
-    public static final String DOC = "/_doc/";
-    public static final String UPDATE = "/_update/";
-    public static final String METHOD_POST = "POST";
-    public static final String METHOD_GET = "GET";
-    public static final String METHOD_DELETE = "DELETE";
-    public static final String METHOD_HEAD = "HEAD";
 
     private final RestClient client = new RestClientFactory().builderLowLevel();
 
@@ -43,7 +39,7 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
             var response = this.client.performRequest(request);
             var status = response.getStatusLine();
 
-            if (201 != status.getStatusCode()) {
+            if (STATUS_CREATED != status.getStatusCode()) {
                 log.error("Could not add document to index: {}", INDEX);
                 throw new InternalServerErrorException("Error adding document to index: " + INDEX);
             }
@@ -116,7 +112,7 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
             var response = this.client.performRequest(request);
             var status = response.getStatusLine();
 
-            if (200 != status.getStatusCode()) {
+            if (STATUS_OK != status.getStatusCode()) {
                 log.error("Could not add document to index: {}", INDEX);
                 return false;
             }
@@ -126,5 +122,10 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
             log.error("Error fetching document from index: {}", INDEX, e);
             throw new InternalServerErrorException("Error fetching document!", e);
         }
+    }
+
+    @Override
+    public Optional<List<Product>> search(String query) {
+        return Optional.empty();
     }
 }

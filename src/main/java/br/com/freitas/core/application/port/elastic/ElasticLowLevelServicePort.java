@@ -2,6 +2,9 @@ package br.com.freitas.core.application.port.elastic;
 
 import br.com.freitas.core.domain.Product;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface ElasticLowLevelServicePort {
 
     Product post(String id, Product product);
@@ -14,5 +17,5 @@ public interface ElasticLowLevelServicePort {
 
     boolean head(String id);
 
-    // void search(String id);
+    Optional<List<Product>> search(String query);
 }

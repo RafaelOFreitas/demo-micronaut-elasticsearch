@@ -18,11 +18,12 @@ public class ElasticMapper {
         return this.objectMapper.convertValue(response, Product.class);
     }
 
+    @SuppressWarnings("unchecked")
     public Product toDomain(String entity) {
         var map = new Gson().fromJson(entity, Map.class);
 
-        var resp = map.get("_source");
+        var resp = (Map<String, Object>) map.get("_source");
 
-        return this.toDomain((Map<String, Object>) resp);
+        return this.toDomain(resp);
     }
 }
