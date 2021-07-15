@@ -1,7 +1,7 @@
 package br.com.freitas.adapter.elastic;
 
+import br.com.freitas.adapter.elastic.config.RestClientFactory;
 import br.com.freitas.adapter.elastic.mapper.ElasticMapper;
-import br.com.freitas.config.RestClientFactory;
 import br.com.freitas.core.application.port.elastic.ElasticHighLevelServicePort;
 import br.com.freitas.core.domain.Product;
 import br.com.freitas.core.exception.InternalServerErrorException;
@@ -19,7 +19,6 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.core.GetSourceRequest;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import javax.inject.Inject;
@@ -42,9 +41,9 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
     private ElasticMapper mapper;
 
     @Override
-    public Product post(String id, Product product) {
+    public Product post(Product product) {
         var json = this.mapper.toJson(product);
-        var request = new IndexRequest(INDEX).id(id).source(json, XContentType.JSON);
+        var request = new IndexRequest(INDEX).source(json, XContentType.JSON);
 
         try {
             var response = this.client.index(request, RequestOptions.DEFAULT);
@@ -53,6 +52,8 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
                 log.error("Could not add document to index: {}", INDEX);
                 throw new InternalServerErrorException("Error adding document to index: " + INDEX);
             }
+
+            product.setId(response.getId());
 
             return product;
         } catch (IOException e) {
@@ -67,7 +68,7 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
 
         try {
             var response = this.client.getSource(request, RequestOptions.DEFAULT).getSource();
-            return this.mapper.toDomain(response);
+            return this.mapper.toDomain(response, id);
         } catch (ElasticsearchException e) {
             log.error("Document not found in index: {} of id: {}", INDEX, id, e);
             throw new NotFoundException(e);
@@ -84,6 +85,7 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
 
         try {
             var response = this.client.update(request, RequestOptions.DEFAULT);
+
             var status = response.getResult();
 
             if (!Result.UPDATED.equals(status) && !Result.NOOP.equals(status)) {
@@ -119,14 +121,19 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
     }
 
     @Override
-    public boolean head(String id) {
+    public void head(String id) {
         var request = new GetSourceRequest(INDEX, id);
 
         try {
-            return this.client.existsSource(request, RequestOptions.DEFAULT);
+            boolean exists = this.client.existsSource(request, RequestOptions.DEFAULT);
+
+            if (!exists) {
+                log.error("Head, document not found in index: {} of id: {}", INDEX, id);
+                throw new NotFoundException(String.format("Document not found in index: %s of id: %s", INDEX, id));
+            }
         } catch (IOException e) {
             log.error("Error verifying the existence of the document index: {}", INDEX, e);
-            return false;
+            throw new InternalServerErrorException("Error verifying document!", e);
         }
     }
 
@@ -140,7 +147,7 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
             var hists = response.getHits().getHits();
 
             var results = Arrays.stream(hists)
-                    .map(hit -> this.mapper.toDomain(hit.getSourceAsString()))
+                    .map(hit -> this.mapper.toDomain(hit.getSourceAsMap(), hit.getId()))
                     .collect(Collectors.toList());
 
             return Optional.of(results);

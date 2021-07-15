@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface ElasticLowLevelServicePort {
 
-    Product post(String id, Product product);
+    Product post(Product product);
 
     Product get(String id);
 
@@ -17,5 +17,5 @@ public interface ElasticLowLevelServicePort {
 
     boolean head(String id);
 
-    Optional<List<Product>> search(String query);
+    Optional<List<Product>> search(Product product);
 }

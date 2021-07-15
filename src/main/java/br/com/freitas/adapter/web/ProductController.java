@@ -27,15 +27,15 @@ public class ProductController {
     @Inject
     private ProductMapper mapper;
 
-    @Post("/{id}")
+    @Post
     @Status(HttpStatus.CREATED)
     @Produces(MediaType.APPLICATION_JSON)
-    public ProductOutput post(@NotBlank String id, @Body @Valid ProductInput product) {
-        log.info("Add document to index /products/_doc/{}", id);
+    public ProductOutput post(@Body @Valid ProductInput product) {
+        log.info("Add document {} to index /products", product.toString());
 
         var domain = this.mapper.toDomain(product);
 
-        var response = this.productService.saveProductWithId(id, domain);
+        var response = this.productService.saveProduct(domain);
 
         return this.mapper.toOutput(response);
     }
@@ -51,10 +51,22 @@ public class ProductController {
         return this.mapper.toOutput(response);
     }
 
+    @Patch("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ProductOutput path(@NotBlank String id, @Body @Valid ProductInput product) {
+        log.info("Update document in index /products/_doc/{}", id);
+
+        var domain = this.mapper.toDomain(product);
+
+        var response = this.productService.updateProductById(id, domain);
+
+        return this.mapper.toOutput(response);
+    }
+
     @Put("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public ProductOutput put(@NotBlank String id, @Body @Valid ProductUpdatable product) {
-        log.info("Update document in index /products/_doc/{}", id);
+        log.info("Update partial in index /products/_doc/{}", id);
 
         var domain = this.mapper.toDomain(product);
 
@@ -83,5 +95,14 @@ public class ProductController {
         var response = this.productService.searchProductByQuery(domain);
 
         return response.stream().map(r -> this.mapper.toOutput(r)).collect(Collectors.toList());
+    }
+
+    @Get("/{id}/exists")
+    @Status(HttpStatus.OK)
+    @Produces(MediaType.TEXT_PLAIN)
+    public void head(@NotBlank String id) {
+        log.info("Verify exists document in index /products/_doc/{}", id);
+
+        this.productService.existProduct(id);
     }
 }

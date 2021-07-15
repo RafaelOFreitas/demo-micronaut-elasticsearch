@@ -1,4 +1,4 @@
-package br.com.freitas.config;
+package br.com.freitas.adapter.elastic.config;
 
 import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;

@@ -1,7 +1,7 @@
 package br.com.freitas.adapter.elastic;
 
+import br.com.freitas.adapter.elastic.config.RestClientFactory;
 import br.com.freitas.adapter.elastic.mapper.ElasticMapper;
-import br.com.freitas.config.RestClientFactory;
 import br.com.freitas.core.application.port.elastic.ElasticLowLevelServicePort;
 import br.com.freitas.core.domain.Product;
 import br.com.freitas.core.exception.InternalServerErrorException;
@@ -30,8 +30,8 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
     private ElasticMapper mapper;
 
     @Override
-    public Product post(String id, Product product) {
-        var endpoint = INDEX + DOC + id;
+    public Product post(Product product) {
+        var endpoint = INDEX + DOC;
         var request = new Request(METHOD_POST, endpoint);
         request.setJsonEntity(this.mapper.toJson(product));
 
@@ -43,6 +43,9 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
                 log.error("Could not add document to index: {}", INDEX);
                 throw new InternalServerErrorException("Error adding document to index: " + INDEX);
             }
+
+            var responseBody = EntityUtils.toString(response.getEntity());
+            product.setId(this.mapper.toId(responseBody));
 
             return product;
         } catch (IOException e) {
@@ -60,7 +63,7 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
             var response = this.client.performRequest(request);
             var responseBody = EntityUtils.toString(response.getEntity());
 
-            return this.mapper.toDomain(responseBody, "_source");
+            return this.mapper.toDomain(responseBody);
         } catch (ResponseException e) {
             log.error("Document not found in index: {} of id: {}", INDEX, id, e);
             throw new NotFoundException(e);
@@ -113,8 +116,8 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
             var status = response.getStatusLine();
 
             if (STATUS_OK != status.getStatusCode()) {
-                log.error("Could not add document to index: {}", INDEX);
-                return false;
+                log.error("Head, document not found in index: {} of id: {}", INDEX, id);
+                throw new NotFoundException(String.format("Document not found in index: %s of id: %s", INDEX, id));
             }
 
             return true;
@@ -125,7 +128,7 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
     }
 
     @Override
-    public Optional<List<Product>> search(String query) {
+    public Optional<List<Product>> search(Product product) {
         return Optional.empty();
     }
 }
