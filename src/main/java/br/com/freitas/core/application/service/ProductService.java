@@ -15,7 +15,7 @@ import javax.inject.Singleton;
 public class ProductService implements ProductServicePort {
 
     @Inject
-    private ElasticHighLevelServicePort elasticService;
+    private ElasticLowLevelServicePort elasticService;
 
     @Override
     public Product saveProductWithId(String id, Product product) {
