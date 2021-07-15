@@ -29,7 +29,23 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
 
     @Override
     public Product post(String id, Product product) {
-        return null;
+        var req = new Request("POST", ENDPOINT + id);
+        req.setJsonEntity(product.toJson());
+
+        try {
+            var response = this.client.performRequest(req);
+            var status = response.getStatusLine();
+
+            if (201 != status.getStatusCode()) {
+                log.error("Could not add document to endpoint: {}", ENDPOINT);
+                throw new InternalServerErrorException("Error adding document to endpoint: " + ENDPOINT);
+            }
+
+            return product;
+        } catch (IOException e) {
+            log.error("Error adding document to endpoint: {}", ENDPOINT, e);
+            throw new InternalServerErrorException("Error adding document!", e);
+        }
     }
 
     @Override
@@ -42,20 +58,63 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
 
             return this.mapper.toDomain(responseBody);
         } catch (ResponseException e) {
-            log.error("Document not found in index: {} of id: {}", ENDPOINT, id, e);
+            log.error("Document not found in endpoint: {} of id: {}", ENDPOINT, id, e);
             throw new NotFoundException(e);
         } catch (IOException e) {
-            log.error("Error fetching document from index: {}", ENDPOINT, e);
+            log.error("Error fetching document from endpoint: {}", ENDPOINT, e);
             throw new InternalServerErrorException("Error fetching document!", e);
         }
     }
 
     @Override
     public Product put(String id, Product product) {
-        return null;
+        var req = new Request("POST", ENDPOINT + id);
+        req.setJsonEntity(product.toJson());
+
+        try {
+            this.client.performRequest(req);
+            return this.get(id);
+        } catch (ResponseException e) {
+            log.error("Error updating, document not found in endpoint: {} of id: {}", ENDPOINT, id, e);
+            throw new NotFoundException(e);
+        } catch (IOException e) {
+            log.error("Error updating document in endpoint: {}", ENDPOINT, e);
+            throw new InternalServerErrorException("Error updating document!", e);
+        }
     }
 
     @Override
     public void delete(String id) {
+        var req = new Request("DELETE", ENDPOINT + id);
+
+        try {
+            this.client.performRequest(req);
+        } catch (ResponseException e) {
+            log.error("Document not found in endpoint: {} of id: {}", ENDPOINT, id, e);
+            throw new NotFoundException(e);
+        } catch (IOException e) {
+            log.error("Error deleting document in endpoint: {}", ENDPOINT, e);
+            throw new InternalServerErrorException("Error deleting document!", e);
+        }
+    }
+
+    @Override
+    public boolean head(String id) {
+        var req = new Request("HEAD", ENDPOINT + id);
+
+        try {
+            var response = this.client.performRequest(req);
+            var status = response.getStatusLine();
+
+            if (200 != status.getStatusCode()) {
+                log.error("Could not add document to endpoint: {}", ENDPOINT);
+                return false;
+            }
+
+            return true;
+        } catch (IOException e) {
+            log.error("Error fetching document from endpoint: {}", ENDPOINT, e);
+            throw new InternalServerErrorException("Error fetching document!", e);
+        }
     }
 }

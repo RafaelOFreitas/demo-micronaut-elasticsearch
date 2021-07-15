@@ -45,7 +45,7 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
                 throw new InternalServerErrorException("Error adding document to index: " + INDEX);
             }
 
-            return this.get(id);
+            return product;
         } catch (IOException e) {
             log.error("Error adding document to index: {}", INDEX, e);
             throw new InternalServerErrorException("Error adding document!", e);
@@ -82,12 +82,12 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
             }
 
             return this.get(id);
-        } catch (IOException e) {
-            log.error("Error updating document in index: {}", INDEX, e);
-            throw new InternalServerErrorException("Error updating document!", e);
         } catch (ElasticsearchStatusException e) {
             log.error("Error updating, document not found in index: {} of id: {}", INDEX, id, e);
             throw new NotFoundException(e);
+        } catch (IOException e) {
+            log.error("Error updating document in index: {}", INDEX, e);
+            throw new InternalServerErrorException("Error updating document!", e);
         }
     }
 
@@ -109,7 +109,7 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
     }
 
     @Override
-    public boolean exist(String id) {
+    public boolean head(String id) {
         var request = new GetSourceRequest(INDEX, id);
 
         try {

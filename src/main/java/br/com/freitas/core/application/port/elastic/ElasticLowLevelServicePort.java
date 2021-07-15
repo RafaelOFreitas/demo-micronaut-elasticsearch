@@ -12,7 +12,7 @@ public interface ElasticLowLevelServicePort {
 
     void delete(String id);
 
-    // void head(String id);
+    boolean head(String id);
 
     // void search(String id);
 }
