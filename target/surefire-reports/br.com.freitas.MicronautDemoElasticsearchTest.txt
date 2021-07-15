@@ -1,8 +1,0 @@
--------------------------------------------------------------------------------
-Test set: br.com.freitas.MicronautDemoElasticsearchTest
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 1.193 s <<< FAILURE! - in br.com.freitas.MicronautDemoElasticsearchTest
-br.com.freitas.MicronautDemoElasticsearchTest  Time elapsed: 1.192 s  <<< ERROR!
-io.micronaut.http.server.exceptions.ServerStartupException: Unable to start Micronaut server on port: 8080
-Caused by: java.net.BindException: Address already in use
-
