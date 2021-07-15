@@ -33,6 +33,7 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
     public Product post(Product product) {
         var endpoint = INDEX + DOC;
         var request = new Request(METHOD_POST, endpoint);
+
         request.setJsonEntity(this.mapper.toJson(product));
 
         try {
@@ -77,6 +78,7 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
     public Product put(String id, Product product) {
         var endpoint = INDEX + UPDATE + id;
         var request = new Request(METHOD_POST, endpoint);
+
         request.setJsonEntity(String.format("{\"doc\":%s}}", this.mapper.toJson(product)));
 
         try {

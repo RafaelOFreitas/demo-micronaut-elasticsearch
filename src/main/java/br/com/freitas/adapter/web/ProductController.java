@@ -53,8 +53,8 @@ public class ProductController {
 
     @Patch("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ProductOutput path(@NotBlank String id, @Body @Valid ProductInput product) {
-        log.info("Update document in index /products/_doc/{}", id);
+    public ProductOutput path(@NotBlank String id, @Body @Valid ProductUpdatable product) {
+        log.info("Update partial document in index /products/_doc/{}", id);
 
         var domain = this.mapper.toDomain(product);
 
@@ -65,8 +65,8 @@ public class ProductController {
 
     @Put("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ProductOutput put(@NotBlank String id, @Body @Valid ProductUpdatable product) {
-        log.info("Update partial in index /products/_doc/{}", id);
+    public ProductOutput put(@NotBlank String id, @Body @Valid ProductInput product) {
+        log.info("Update document in index /products/_doc/{}", id);
 
         var domain = this.mapper.toDomain(product);
 
