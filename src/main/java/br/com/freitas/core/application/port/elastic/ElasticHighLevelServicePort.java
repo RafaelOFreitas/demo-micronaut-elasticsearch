@@ -12,6 +12,8 @@ public interface ElasticHighLevelServicePort {
 
     void delete(String id);
 
+    boolean exist(String id);
+
     // void head(String id);
 
     // void search(String id);

@@ -8,6 +8,7 @@ import lombok.Getter;
 public enum ErrorType {
     BAD_REQUEST("Bad Request"),
     RESOURCE_NOT_FOUND("Resource Not Found"),
+    CONFLICT("Resource Conflict"),
     INTERNAL_SERVER_ERROR("System Error");
 
     private final String title;

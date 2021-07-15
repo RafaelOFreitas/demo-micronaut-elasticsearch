@@ -3,6 +3,7 @@ package br.com.freitas.core.application.service;
 import br.com.freitas.core.application.port.elastic.ElasticHighLevelServicePort;
 import br.com.freitas.core.application.port.web.ProductServicePort;
 import br.com.freitas.core.domain.Product;
+import br.com.freitas.core.exception.ConflictException;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -17,6 +18,11 @@ public class ProductService implements ProductServicePort {
 
     @Override
     public Product saveProductWithId(String id, Product product) {
+        if (this.elasticService.exist(id)) {
+            log.error("Could not add document {}!", id);
+            throw new ConflictException(String.format("Document of id %s already exists!", id));
+        }
+
         return this.elasticService.post(id, product);
     }
 

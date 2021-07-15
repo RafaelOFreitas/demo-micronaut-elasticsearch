@@ -1,9 +1,6 @@
 package br.com.freitas.adapter.web.handler;
 
-import br.com.freitas.core.exception.BadRequestException;
-import br.com.freitas.core.exception.BaseException;
-import br.com.freitas.core.exception.InternalServerErrorException;
-import br.com.freitas.core.exception.NotFoundException;
+import br.com.freitas.core.exception.*;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
@@ -45,6 +42,16 @@ public class BaseExceptionHandler implements ExceptionHandler<BaseException, Htt
         if (exception instanceof BadRequestException) {
             var status = HttpStatus.BAD_REQUEST;
             var errorType = ErrorType.BAD_REQUEST;
+            String detail = exception.getMessage();
+
+            var error = this.createError(status, errorType, detail);
+
+            return HttpResponse.status(status).body(error);
+        }
+
+        if (exception instanceof ConflictException) {
+            var status = HttpStatus.CONFLICT;
+            var errorType = ErrorType.CONFLICT;
             String detail = exception.getMessage();
 
             var error = this.createError(status, errorType, detail);
