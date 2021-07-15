@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @Singleton
@@ -39,5 +41,12 @@ public class ProductService implements ProductServicePort {
     @Override
     public void deleteProductById(String id) {
         this.elasticService.delete(id);
+    }
+
+    @Override
+    public List<Product> searchProductByQuery(Product product) {
+        var result = this.elasticService.search(product);
+
+        return result.orElse(Collections.emptyList());
     }
 }

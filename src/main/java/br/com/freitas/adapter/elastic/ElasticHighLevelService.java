@@ -12,17 +12,23 @@ import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.core.GetSourceRequest;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static br.com.freitas.adapter.elastic.constants.ElasticConstants.INDEX;
 
@@ -37,7 +43,8 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
 
     @Override
     public Product post(String id, Product product) {
-        var request = new IndexRequest(INDEX).id(id).source(product.toJson(), XContentType.JSON);
+        var json = this.mapper.toJson(product);
+        var request = new IndexRequest(INDEX).id(id).source(json, XContentType.JSON);
 
         try {
             var response = this.client.index(request, RequestOptions.DEFAULT);
@@ -72,7 +79,8 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
 
     @Override
     public Product put(String id, Product product) {
-        var request = new UpdateRequest(INDEX, id).doc(product.toJson(), XContentType.JSON);
+        var json = this.mapper.toJson(product);
+        var request = new UpdateRequest(INDEX, id).doc(json, XContentType.JSON);
 
         try {
             var response = this.client.update(request, RequestOptions.DEFAULT);
@@ -123,7 +131,33 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
     }
 
     @Override
-    public Optional<List<Product>> search(String query) {
-        return Optional.empty();
+    public Optional<List<Product>> search(Product product) {
+        var request = new SearchRequest(INDEX);
+        request.source(this.getSearchSourceBuilder(product));
+
+        try {
+            var response = this.client.search(request, RequestOptions.DEFAULT);
+            var hists = response.getHits().getHits();
+
+            var results = Arrays.stream(hists)
+                    .map(hit -> this.mapper.toDomain(hit.getSourceAsString()))
+                    .collect(Collectors.toList());
+
+            return Optional.of(results);
+        } catch (IOException e) {
+            log.error("Error search documents index: {} by query: {}", INDEX, product, e);
+            return Optional.empty();
+        }
+    }
+
+    private SearchSourceBuilder getSearchSourceBuilder(Product product) {
+        var query = QueryBuilders.boolQuery();
+
+        this.mapper.toMap(product).forEach((name, value) -> query.must(QueryBuilders.matchQuery(name, value)));
+
+        return SearchSourceBuilder
+                .searchSource()
+                .query(query)
+                .size(10);
     }
 }

@@ -33,7 +33,7 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
     public Product post(String id, Product product) {
         var endpoint = INDEX + DOC + id;
         var request = new Request(METHOD_POST, endpoint);
-        request.setJsonEntity(product.toJson());
+        request.setJsonEntity(this.mapper.toJson(product));
 
         try {
             var response = this.client.performRequest(request);
@@ -60,7 +60,7 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
             var response = this.client.performRequest(request);
             var responseBody = EntityUtils.toString(response.getEntity());
 
-            return this.mapper.toDomain(responseBody);
+            return this.mapper.toDomain(responseBody, "_source");
         } catch (ResponseException e) {
             log.error("Document not found in index: {} of id: {}", INDEX, id, e);
             throw new NotFoundException(e);
@@ -74,7 +74,7 @@ public class ElasticLowLevelService implements ElasticLowLevelServicePort {
     public Product put(String id, Product product) {
         var endpoint = INDEX + UPDATE + id;
         var request = new Request(METHOD_POST, endpoint);
-        request.setJsonEntity(String.format("{\"doc\":%s}}", product.toJson()));
+        request.setJsonEntity(String.format("{\"doc\":%s}}", this.mapper.toJson(product)));
 
         try {
             this.client.performRequest(request);

@@ -17,5 +17,5 @@ public interface ElasticHighLevelServicePort {
 
     boolean head(String id);
 
-    Optional<List<Product>> search(String query);
+    Optional<List<Product>> search(Product product);
 }

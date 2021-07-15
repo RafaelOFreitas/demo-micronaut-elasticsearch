@@ -19,11 +19,26 @@ public class ElasticMapper {
     }
 
     @SuppressWarnings("unchecked")
-    public Product toDomain(String entity) {
+    public Product toDomain(String entity, String source) {
         var map = new Gson().fromJson(entity, Map.class);
 
-        var resp = (Map<String, Object>) map.get("_source");
+        var resp = (Map<String, Object>) map.get(source);
 
         return this.toDomain(resp);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Product toDomain(String entity) {
+        var map = new Gson().fromJson(entity, Map.class);
+        return this.toDomain(map);
+    }
+
+    public String toJson(Product product) {
+        return new Gson().toJson(product);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> toMap(Product product) {
+        return new Gson().fromJson(this.toJson(product), Map.class);
     }
 }

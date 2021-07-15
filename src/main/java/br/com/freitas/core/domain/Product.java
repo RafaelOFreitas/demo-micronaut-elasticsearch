@@ -19,8 +19,4 @@ public class Product {
     private String description;
 
     private String expirationDate;
-
-    public String toJson() {
-        return new Gson().toJson(this);
-    }
 }
