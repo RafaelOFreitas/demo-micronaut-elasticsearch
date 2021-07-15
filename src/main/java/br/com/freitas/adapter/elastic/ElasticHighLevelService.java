@@ -8,6 +8,7 @@ import br.com.freitas.core.exception.InternalServerErrorException;
 import br.com.freitas.core.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
@@ -83,6 +84,9 @@ public class ElasticHighLevelService implements ElasticHighLevelServicePort {
         } catch (IOException e) {
             log.error("Error updating document in index: {}", INDEX, e);
             throw new InternalServerErrorException("Error updating document!", e);
+        } catch (ElasticsearchStatusException e) {
+            log.error("Error updating, document not found in index: {} of id: {}", INDEX, id);
+            throw new NotFoundException(e);
         }
     }
 
